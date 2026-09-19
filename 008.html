@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Kinetic Wave Fracture Text Effect Maker</title>
+    
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:ital,wght@0,300..700;1,300..700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Editorial Theme Palette with Automatic Light/Dark Mode */
+        :root {
+            --bg-color: #f7f5f0;
+            --panel-bg: var(--bg-color);
+            --text-primary: #121212;
+            --text-muted: #736e65;
+            --accent: #121212;
+            --border-color: rgba(18, 18, 18, 0.12);
+            --canvas-bg: #ffffff;
+            --checker-1: #efece6;
+            --checker-2: #ffffff;
+            --input-underline: #121212;
+            --font-editorial: 'Instrument Serif', serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #0d0d0d;
+                --panel-bg: var(--bg-color);
+                --text-primary: #f0eee9;
+                --text-muted: #8c877e;
+                --accent: #f0eee9;
+                --border-color: rgba(240, 238, 233, 0.15);
+                --canvas-bg: #141414;
+                --checker-1: #1a1a1a;
+                --checker-2: #101010;
+                --input-underline: #f0eee9;
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-mono);
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 40px 24px;
+            -webkit-font-smoothing: antialiased;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Semantic Header */
+        header {
+            width: 100%;
+            max-width: 1100px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            margin-bottom: 40px;
+        }
+
+        .logo-link {
+            font-family: var(--font-mono);
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        nav a {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        nav a:hover {
+            color: var(--text-primary);
+        }
+
+        /* App Layout */
+        .app-layout {
+            display: grid;
+            grid-template-columns: 1.3fr 1fr;
+            gap: 50px;
+            width: 100%;
+            max-width: 1100px;
+            background: var(--panel-bg);
+            padding: 0;
+            margin-bottom: 60px;
+        }
+
+        @media (max-width: 950px) {
+            .app-layout {
+                grid-template-columns: 1fr;
+                gap: 35px;
+            }
+        }
+
+        /* Canvas Container */
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 2 / 1;
+            background-color: var(--canvas-bg);
+            background-image: conic-gradient(var(--checker-1) 0.25turn, var(--checker-2) 0.25turn 0.5turn, var(--checker-1) 0.5turn 0.75turn, var(--checker-2) 0.75turn);
+            background-size: 20px 20px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 2px;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* Control Panel */
+        .control-panel {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 28px;
+        }
+
+        .controls-group {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .text-input-wrapper {
+            position: relative;
+        }
+
+        .text-input {
+            width: 100%;
+            font-size: 2.2rem;
+            padding: 8px 0;
+            border: none;
+            border-bottom: 1px solid var(--input-underline);
+            outline: none;
+            background: transparent;
+            font-family: var(--font-editorial);
+            font-weight: 400;
+            color: var(--text-primary);
+            letter-spacing: 0.01em;
+            resize: vertical;
+            min-height: 56px;
+            line-height: 1.1;
+        }
+
+        .text-input::placeholder {
+            color: var(--text-muted);
+            opacity: 0.5;
+            font-style: italic;
+        }
+
+        .control-row {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .control-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.72rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+        }
+
+        .label-with-icon {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .label-icon {
+            width: 14px;
+            height: 14px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 1.5;
+            flex-shrink: 0;
+            opacity: 0.8;
+        }
+
+        .value-display {
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+        }
+
+        .value-display[contenteditable="true"] {
+            cursor: text;
+            outline: none;
+            border-bottom: 1px dashed var(--text-muted);
+            min-width: 36px;
+            display: inline-block;
+            text-align: right;
+            transition: border-bottom-color 0.2s ease;
+        }
+
+        .value-display[contenteditable="true"]:focus {
+            border-bottom-color: var(--accent);
+        }
+
+        /* Range Slider */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 1px;
+            background: var(--border-color);
+            outline: none;
+            margin: 12px 0 6px 0;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--text-primary);
+            cursor: pointer;
+            transition: transform 0.15s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.4);
+        }
+
+        /* Advanced Options */
+        details.advanced-options {
+            border-top: 1px solid var(--border-color);
+            padding-top: 16px;
+            margin-top: 4px;
+        }
+
+        details.advanced-options summary {
+            font-size: 0.72rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            font-family: var(--font-mono);
+        }
+
+        details.advanced-options summary::-webkit-details-marker {
+            display: none;
+        }
+
+        details.advanced-options summary::after {
+            content: "＋";
+            font-size: 0.75rem;
+            font-weight: 300;
+        }
+
+        details.advanced-options[open] summary::after {
+            content: "－";
+        }
+
+        .advanced-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px 18px;
+            padding-top: 20px;
+        }
+
+        .color-selector {
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 6px;
+            gap: 10px;
+            background: transparent;
+            justify-content: space-between;
+        }
+
+        input[type="color"] {
+            -webkit-appearance: none;
+            border: none;
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            background: none;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        input[type="color"]::-webkit-color-swatch {
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+        }
+
+        .export-dropdown, .btn-custom-font {
+            width: 100%;
+            padding: 8px 0;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            border: none;
+            border-bottom: 1px solid var(--border-color);
+            background: transparent;
+            color: var(--text-primary);
+            outline: none;
+            cursor: pointer;
+            text-align: left;
+            box-sizing: border-box;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-radius: 0;
+        }
+        
+        .export-dropdown:focus, .btn-custom-font:hover {
+            border-color: var(--text-primary);
+        }
+
+        /* Download Button */
+        .btn-download {
+            background: var(--text-primary);
+            color: var(--bg-color);
+            border: none;
+            padding: 14px 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            font-size: 0.75rem;
+            font-weight: 500;
+            font-family: var(--font-mono);
+            cursor: pointer;
+            transition: opacity 0.15s ease, transform 0.1s ease;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            border-radius: 2px;
+        }
+
+        .btn-download:hover {
+            opacity: 0.88;
+        }
+
+        .btn-download:active {
+            transform: scale(0.99);
+        }
+        
+        .btn-download:disabled {
+            background: var(--text-muted);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        footer {
+            width: 100%;
+            max-width: 1100px;
+            padding: 20px 0;
+            text-align: center;
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <header role="banner">
+        <a href="https://callistra.design" class="logo-link">Callistra.design</a>
+    </header>
+
+    <main role="main">
+        <div class="app-layout">
+            <div class="canvas-container">
+                <canvas id="canvas" width="800" height="400" aria-label="Typography preview canvas showcasing kinetic wave fracture text effects"></canvas>
+            </div>
+
+            <div class="control-panel">
+                <div class="controls-group">
+                    <div class="text-input-wrapper">
+                        <textarea id="textInput" class="text-input" placeholder="TYPE SOMETHING..." oninput="draw()" aria-label="Kinetic Wave Fracture Text Input Source" rows="2">FRACTURE</textarea>
+                    </div>
+
+                    <div class="control-row">
+                        <div class="control-header">
+                            <label for="shift" class="label-with-icon">
+                                <svg class="label-icon" viewBox="0 0 24 24"><path d="M18 8l4 4-4 4M6 16l-4-4 4-4M2 12h20"/></svg>
+                                Fracture Shift
+                            </label>
+                            <span id="v_shift" class="value-display" contenteditable="true" oninput="updateFromText('shift')" onblur="handleBlur('shift')">5px</span>
+                        </div>
+                        <input type="range" id="shift" min="0" max="10" step="1" value="5" oninput="draw()">
+                    </div>
+
+                    <div class="control-row">
+                        <div class="control-header">
+                            <label for="bands" class="label-with-icon">
+                                <svg class="label-icon" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+                                Band Frequency
+                            </label>
+                            <span id="v_bands" class="value-display" contenteditable="true" oninput="updateFromText('bands')" onblur="handleBlur('bands', '')">6</span>
+                        </div>
+                        <input type="range" id="bands" min="3" max="10" step="1" value="6" oninput="draw()">
+                    </div>
+
+                    <div class="control-row">
+                        <div class="control-header">
+                            <label for="accentStroke" class="label-with-icon">
+                                <svg class="label-icon" viewBox="0 0 24 24"><path d="M12 2v20M2 12h20"/></svg>
+                                Seam Accent
+                            </label>
+                            <span id="v_accentStroke" class="value-display" contenteditable="true" oninput="updateFromText('accentStroke')" onblur="handleBlur('accentStroke')">1.5px</span>
+                        </div>
+                        <input type="range" id="accentStroke" min="0" max="4" step="0.1" value="1.5" oninput="draw()">
+                    </div>
+
+                    <details class="advanced-options">
+                        <summary>Color and Size</summary>
+                        <div class="advanced-grid">
+                            <div class="control-row">
+                                <div class="control-header">
+                                    <label for="fontSize" class="label-with-icon">
+                                        <svg class="label-icon" viewBox="0 0 24 24"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg>
+                                        Size
+                                    </label>
+                                    <span id="v_fontSize" class="value-display" contenteditable="true" oninput="updateFromText('fontSize')" onblur="handleBlur('fontSize')">140px</span>
+                                </div>
+                                <input type="range" id="fontSize" min="30" max="250" value="140" oninput="draw()">
+                            </div>
+
+                            <div class="control-row">
+                                <div class="control-header">
+                                    <label for="textColor" class="label-with-icon">
+                                        <svg class="label-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z"/></svg>
+                                        Color
+                                    </label>
+                                </div>
+                                <div class="color-selector">
+                                    <input type="color" id="textColor" value="#000000" oninput="updateColorLabel(this.value)">
+                                    <span id="v_color" class="value-display" contenteditable="true" style="font-size: 0.75rem;" oninput="updateFromColorText()" onblur="handleColorBlur()">#000000</span>
+                                </div>
+                            </div>
+
+                            <div class="control-row">
+                                <div class="control-header">
+                                    <label class="label-with-icon">
+                                        <svg class="label-icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                                        Custom Font
+                                    </label>
+                                </div>
+                                <label for="fontInput" class="btn-custom-font" id="fontLabel">Upload Font</label>
+                                <input type="file" id="fontInput" accept=".ttf,.otf,.woff,.woff2" onchange="handleFontUpload(event)" style="display: none;">
+                            </div>
+
+                            <div class="control-row">
+                                <div class="control-header">
+                                    <label for="exportScale" class="label-with-icon">
+                                        <svg class="label-icon" viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+                                        Export Size
+                                    </label>
+                                </div>
+                                <select id="exportScale" class="export-dropdown">
+                                    <option value="1">1x</option>
+                                    <option value="2">2x</option>
+                                    <option value="4" selected>4x</option>
+                                    <option value="8">8x</option>
+                                </select>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+
+                <div>
+                    <button class="btn-download" onclick="downloadPNG()">
+                        <svg class="label-icon" style="width: 15px; height: 15px;" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                        DOWNLOAD PNG
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer role="contentinfo"></footer>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let customFontFamily = '"Instrument Serif", serif';
+
+        function initThemeColor() {
+            const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const defaultColor = isDark ? '#FFFFFF' : '#000000';
+            const textColorInput = document.getElementById('textColor');
+            const colorSpan = document.getElementById('v_color');
+            if (textColorInput && colorSpan) {
+                textColorInput.value = defaultColor;
+                colorSpan.innerText = defaultColor;
+            }
+        }
+
+        function handleFontUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const fontName = 'CustomFont_' + Date.now();
+                const font = new FontFace(fontName, e.target.result);
+                font.load().then(function(loadedFont) {
+                    document.fonts.add(loadedFont);
+                    customFontFamily = `"${fontName}", "Instrument Serif", serif`;
+                    const label = document.getElementById('fontLabel');
+                    if (label) label.innerText = file.name;
+                    draw();
+                }).catch(function(err) {
+                    console.error("Error loading custom font:", err);
+                    alert("Could not load custom font file.");
+                });
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function updateColorLabel(colorVal) {
+            const span = document.getElementById('v_color');
+            if (document.activeElement !== span) {
+                span.innerText = colorVal.toUpperCase();
+            }
+            draw();
+        }
+
+        function updateFromColorText() {
+            const span = document.getElementById('v_color');
+            const input = document.getElementById('textColor');
+            let val = span.innerText.trim();
+            if (!val.startsWith('#')) {
+                val = '#' + val;
+            }
+            if (/^#([0-9A-Fa-f]{3})$/.test(val)) {
+                val = '#' + val[1] + val[1] + val[2] + val[2] + val[3] + val[3];
+            }
+            if (/^#([0-9A-Fa-f]{6})$/.test(val)) {
+                input.value = val;
+                draw();
+            }
+        }
+
+        function handleColorBlur() {
+            const span = document.getElementById('v_color');
+            const input = document.getElementById('textColor');
+            span.innerText = input.value.toUpperCase();
+        }
+
+        function updateFromText(id) {
+            const span = document.getElementById('v_' + id);
+            const input = document.getElementById(id);
+            let val = parseFloat(span.innerText.replace(/[^0-9.-]/g, ''));
+            if (!isNaN(val)) {
+                input.value = val;
+                draw();
+            }
+        }
+        
+        function handleBlur(id, suffix = 'px') {
+            const span = document.getElementById('v_' + id);
+            const input = document.getElementById(id);
+            span.innerText = input.value + suffix;
+        }
+
+        let renderPending = false;
+
+        function draw() {
+            if (!renderPending) {
+                renderPending = true;
+                requestAnimationFrame(() => {
+                    try {
+                        performDraw();
+                    } finally {
+                        renderPending = false;
+                    }
+                });
+            }
+        }
+
+        function performDraw() {
+            renderToCanvas(ctx, canvas.width, canvas.height, 1);
+        }
+
+        function renderToCanvas(targetCtx, targetWidth, targetHeight, scale) {
+            const text = document.getElementById('textInput').value;
+            
+            const origShift = parseFloat(document.getElementById('shift').value);
+            let origBands = parseInt(document.getElementById('bands').value);
+            if (isNaN(origBands) || origBands < 3) origBands = 3;
+            
+            const origAccentStroke = parseFloat(document.getElementById('accentStroke').value);
+            const origFontSize = parseInt(document.getElementById('fontSize').value);
+            const textColor = document.getElementById('textColor').value;
+
+            if (scale === 1) {
+                if (document.activeElement !== document.getElementById('v_shift')) {
+                    document.getElementById('v_shift').innerText = origShift + 'px';
+                }
+                if (document.activeElement !== document.getElementById('v_bands')) {
+                    document.getElementById('v_bands').innerText = origBands;
+                }
+                if (document.activeElement !== document.getElementById('v_accentStroke')) {
+                    document.getElementById('v_accentStroke').innerText = origAccentStroke + 'px';
+                }
+                if (document.activeElement !== document.getElementById('v_fontSize')) {
+                    document.getElementById('v_fontSize').innerText = origFontSize + 'px';
+                }
+                if (document.activeElement !== document.getElementById('v_color')) {
+                    document.getElementById('v_color').innerText = textColor.toUpperCase();
+                }
+            }
+
+            targetCtx.clearRect(0, 0, targetWidth, targetHeight);
+            
+            if (!text.trim()) return null;
+
+            // Step 1: Render clean base text to an offscreen buffer canvas
+            const offscreen = document.createElement('canvas');
+            offscreen.width = targetWidth; 
+            offscreen.height = targetHeight;
+            const octx = offscreen.getContext('2d');
+            
+            const lines = text.split('\n');
+            const scaledShift = origShift * scale;
+            const padding = (scaledShift * 2) + (40 * scale); 
+
+            const refSize = 100 * scale;
+            octx.font = `400 ${refSize}px ${customFontFamily}`;
+            let maxRefWidth = 1;
+            lines.forEach(line => {
+                let width = octx.measureText(line).width;
+                if (width > maxRefWidth) maxRefWidth = width;
+            });
+            
+            const refTotalHeight = lines.length * (refSize * 1.1);
+            
+            const availWidth = Math.max(10 * scale, targetWidth - padding);
+            const availHeight = Math.max(10 * scale, targetHeight - padding);
+            
+            const maxFontSizeW = (availWidth * refSize) / maxRefWidth;
+            const maxFontSizeH = (availHeight * refSize) / refTotalHeight;
+            const calculatedMaxFontSize = Math.min(maxFontSizeW, maxFontSizeH);
+            
+            const scaledFontSize = Math.max(10 * scale, Math.min(origFontSize * scale, calculatedMaxFontSize));
+            
+            octx.font = `400 ${scaledFontSize}px ${customFontFamily}`;
+            octx.textAlign = 'center';
+            octx.textBaseline = 'middle';
+            octx.fillStyle = textColor;
+            
+            const lineHeight = scaledFontSize * 1.1; 
+            const totalHeight = lines.length * lineHeight;
+            let startY = (targetHeight / 2) - (totalHeight / 2) + (lineHeight / 2);
+
+            lines.forEach((line, index) => {
+                octx.fillText(line, (targetWidth / 2), startY + (index * lineHeight));
+            });
+
+            // Step 2: Calculate tight bounding box of rendered text pixels
+            const imgData = octx.getImageData(0, 0, targetWidth, targetHeight);
+            const buffer = new Uint32Array(imgData.data.buffer);
+            let minX = targetWidth, minY = targetHeight, maxX = 0, maxY = 0;
+            let hasPixels = false;
+
+            for (let y = 0; y < targetHeight; y++) {
+                const row = y * targetWidth;
+                for (let x = 0; x < targetWidth; x++) {
+                    if (buffer[row + x] !== 0) {
+                        if (x < minX) minX = x;
+                        if (x > maxX) maxX = x;
+                        if (y < minY) minY = y;
+                        if (y > maxY) maxY = y;
+                        hasPixels = true;
+                    }
+                }
+            }
+
+            if (!hasPixels) return null;
+
+            // Step 3: Define effective text bounds with tight margin overhang allowance
+            const padX = Math.round(15 * scale);
+            const padY = Math.round(8 * scale);
+
+            const effMinX = Math.max(0, minX - padX);
+            const effMaxX = Math.min(targetWidth, maxX + padX);
+            const effMinY = Math.max(0, minY - padY);
+            const effMaxY = Math.min(targetHeight, maxY + padY);
+
+            const effHeight = effMaxY - effMinY;
+            const effWidth = effMaxX - effMinX;
+
+            // Step 4: Map kinetic wave function strictly to text bounding height and width
+            const bandHeight = effHeight / origBands;
+            const waveAmplitude = Math.min(10 * scale, bandHeight * 0.35);
+            const waveFrequency = (Math.PI * 2) / (effWidth * 0.8);
+
+            function getSeamY(seamIndex, x) {
+                if (seamIndex <= 0) return effMinY;
+                if (seamIndex >= origBands) return effMaxY;
+                const baseY = effMinY + (seamIndex * bandHeight);
+                const phase = seamIndex * 0.85;
+                return baseY + Math.sin((x - effMinX) * waveFrequency + phase) * waveAmplitude;
+            }
+
+            // Step 5: Slice canvas into bands and displace offset strictly within text bounds
+            for (let b = 0; b < origBands; b++) {
+                const isOdd = (b % 2 !== 0);
+                const shiftOffset = isOdd ? scaledShift : -scaledShift;
+
+                targetCtx.save();
+                targetCtx.beginPath();
+                
+                const xStep = Math.max(1, Math.round(2 * scale));
+
+                // Top wave boundary of band
+                targetCtx.moveTo(effMinX, getSeamY(b, effMinX));
+                for (let x = effMinX; x <= effMaxX; x += xStep) {
+                    targetCtx.lineTo(x, getSeamY(b, x));
+                }
+                targetCtx.lineTo(effMaxX, getSeamY(b, effMaxX));
+
+                // Bottom wave boundary of band
+                for (let x = effMaxX; x >= effMinX; x -= xStep) {
+                    targetCtx.lineTo(x, getSeamY(b + 1, x));
+                }
+                targetCtx.lineTo(effMinX, getSeamY(b + 1, effMinX));
+                
+                targetCtx.closePath();
+                targetCtx.clip();
+
+                targetCtx.drawImage(offscreen, shiftOffset, 0);
+                targetCtx.restore();
+            }
+
+            // Step 6: Draw seam accent strokes strictly across the text bounds
+            if (origAccentStroke > 0) {
+                targetCtx.save();
+                targetCtx.strokeStyle = textColor;
+                targetCtx.lineWidth = origAccentStroke * scale;
+                targetCtx.globalCompositeOperation = 'source-over';
+
+                const xStep = Math.max(1, Math.round(2 * scale));
+
+                for (let s = 1; s < origBands; s++) {
+                    targetCtx.beginPath();
+                    targetCtx.moveTo(effMinX, getSeamY(s, effMinX));
+                    for (let x = effMinX + xStep; x <= effMaxX; x += xStep) {
+                        targetCtx.lineTo(x, getSeamY(s, x));
+                    }
+                    targetCtx.stroke();
+                }
+                targetCtx.restore();
+            }
+
+            return targetCtx.getImageData(0, 0, targetWidth, targetHeight);
+        }
+
+        function downloadPNG() {
+            const btn = document.querySelector('.btn-download');
+            const origText = btn.innerHTML;
+            btn.innerText = "RENDERING...";
+            btn.disabled = true;
+
+            setTimeout(() => {
+                try {
+                    const scale = parseInt(document.getElementById('exportScale').value) || 4; 
+                    const targetWidth = 800 * scale; 
+                    const targetHeight = 400 * scale; 
+
+                    const tempCanvas = document.createElement('canvas');
+                    tempCanvas.width = targetWidth;
+                    tempCanvas.height = targetHeight;
+                    const tempCtx = tempCanvas.getContext('2d');
+
+                    const targetData = renderToCanvas(tempCtx, targetWidth, targetHeight, scale);
+
+                    if (!targetData) {
+                        btn.innerHTML = origText;
+                        btn.disabled = false;
+                        return;
+                    }
+
+                    const buffer = new Uint32Array(targetData.data.buffer);
+                    let minX = targetWidth, minY = targetHeight, maxX = 0, maxY = 0;
+                    let hasPixels = false;
+
+                    for (let y = 0; y < targetHeight; y++) {
+                        const rowOffset = y * targetWidth;
+                        for (let x = 0; x < targetWidth; x++) {
+                            if (buffer[rowOffset + x] !== 0) {
+                                if (x < minX) minX = x;
+                                if (x > maxX) maxX = x;
+                                if (y < minY) minY = y;
+                                if (y > maxY) maxY = y;
+                                hasPixels = true;
+                            }
+                        }
+                    }
+
+                    if (!hasPixels) {
+                        alert("No text to download.");
+                        btn.innerHTML = origText;
+                        btn.disabled = false;
+                        return;
+                    }
+
+                    const cropW = maxX - minX + 1;
+                    const cropH = maxY - minY + 1;
+
+                    const cropCanvas = document.createElement('canvas');
+                    cropCanvas.width = cropW;
+                    cropCanvas.height = cropH;
+                    const cropCtx = cropCanvas.getContext('2d');
+                    
+                    const cropData = cropCtx.createImageData(cropW, cropH);
+                    const cropBuffer = new Uint32Array(cropData.data.buffer);
+                    
+                    for (let y = 0; y < cropH; y++) {
+                        const srcRow = (y + minY) * targetWidth;
+                        const dstRow = y * cropW;
+                        for (let x = 0; x < cropW; x++) {
+                            cropBuffer[dstRow + x] = buffer[srcRow + (x + minX)];
+                        }
+                    }
+                    cropCtx.putImageData(cropData, 0, 0);
+
+                    const link = document.createElement('a');
+                    link.download = `kinetic-wave-fracture-${scale}x.png`;
+                    link.href = cropCanvas.toDataURL('image/png');
+                    link.click();
+
+                } catch (err) {
+                    console.error("Render failed:", err);
+                    alert("An error occurred during export.");
+                } finally {
+                    btn.innerHTML = origText;
+                    btn.disabled = false;
+                }
+            }, 50);
+        }
+
+        initThemeColor();
+
+        if (window.matchMedia) {
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+                initThemeColor();
+                draw();
+            });
+        }
+
+        document.fonts.ready.then(() => {
+            draw();
+        });
+    </script>
+</body>
+</html>
